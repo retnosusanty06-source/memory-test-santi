@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memory Test</title>
+<style>
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f5f7;margin:0;color:#111}
+  .card{max-width:520px;margin:40px auto;padding:28px;background:#fff;border-radius:20px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.08)}
+  h1{margin-top:0}.sub{color:#666;line-height:1.5}
+  #display{font-size:36px;font-weight:700;min-height:90px;display:flex;align-items:center;justify-content:center;margin:24px 0}
+  #progress{color:#666;margin:10px}
+  button{border:0;border-radius:12px;padding:14px 22px;font-size:17px;font-weight:700;cursor:pointer;background:#111;color:#fff;margin:8px}
+  input{font-size:22px;padding:12px;width:160px;text-align:center;border:1px solid #ccc;border-radius:12px}
+  .hidden{display:none}
+  #message{font-size:18px;font-weight:600;min-height:28px;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🧠 Memory Test</h1>
+  <p class="sub">20 soal • 5 item per soal • setiap item tampil 3 detik</p>
+  <div id="progress"></div>
+  <div id="display">Siap latihan? 😏</div>
+
+  <div id="startArea">
+    <button onclick="startTest()">Mulai</button>
+  </div>
+
+  <div id="answerArea" class="hidden">
+    <p id="question"></p>
+    <input id="answer" inputmode="numeric" placeholder="Angka">
+    <br>
+    <button onclick="checkAnswer()">Jawab</button>
+  </div>
+
+  <div id="message"></div>
+</div>
+
+<script>
+const words = [
+  "Australia","Jepang","Brasil","Kanada","India","Thailand","Korea","Mesir",
+  "Belanda","Italia","Spanyol","Jerman","Meksiko","Argentina","Malaysia",
+  "Bebek","Ayam","Kucing","Kelinci","Kuda","Gajah","Ikan","Harimau",
+  "Buku","Pensil","Gelas","Sepeda","Motor","Tas","Kamera","Payung",
+  "Mangga","Jeruk","Pisang","Apel","Roti","Kopi","Bola","Jam"
+];
+
+let round=0, score=0, currentItems=[], askedItem=null;
+
+function shuffle(a){
+  return [...a].sort(()=>Math.random()-0.5);
+}
+
+function makeRound(){
+  const selected = shuffle(words).slice(0,5);
+  const nums = shuffle(Array.from({length:90},(_,i)=>i+10)).slice(0,5);
+  currentItems = selected.map((word,i)=>({word, number:nums[i]}));
+  askedItem = currentItems[Math.floor(Math.random()*currentItems.length)];
+}
+
+function startTest(){
+  round=0; score=0;
+  document.getElementById("startArea").classList.add("hidden");
+  document.getElementById("message").textContent="";
+  nextRound();
+}
+
+function nextRound(){
+  if(round>=20){
+    document.getElementById("display").textContent=`Selesai! Nilai kamu: ${score}/20 🎉`;
+    document.getElementById("progress").textContent="";
+    document.getElementById("answerArea").classList.add("hidden");
+    document.getElementById("startArea").classList.remove("hidden");
+    document.querySelector("#startArea button").textContent="Ulangi dengan soal baru";
+    return;
+  }
+  round++;
+  makeRound();
+  document.getElementById("progress").textContent=`Soal ${round} dari 20`;
+  document.getElementById("answerArea").classList.add("hidden");
+  document.getElementById("message").textContent="";
+  showItems(0);
+}
+
+function showItems(index){
+  if(index < currentItems.length){
+    const item=currentItems[index];
+    document.getElementById("display").textContent=`${item.number} ${item.word}`;
+    setTimeout(()=>showItems(index+1),3000);
+  } else {
+    document.getElementById("display").textContent="❓";
+    document.getElementById("question").textContent=`Ada berapa ${askedItem.word}?`;
+    document.getElementById("answer").value="";
+    document.getElementById("answerArea").classList.remove("hidden");
+    document.getElementById("answer").focus();
+  }
+}
+
+function checkAnswer(){
+  const value=Number(document.getElementById("answer").value);
+  if(!document.getElementById("answer").value) return;
+  const correct=value===askedItem.number;
+  if(correct) score++;
+  document.getElementById("message").textContent=
+    correct ? "Benar! 😎" : `Jawaban: ${askedItem.number}`;
+  document.getElementById("answerArea").classList.add("hidden");
+  setTimeout(nextRound,1200);
+}
+
+document.getElementById("answer").addEventListener("keydown",e=>{
+  if(e.key==="Enter") checkAnswer();
+});
+</script>
+</body>
+</html>
